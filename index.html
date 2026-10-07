@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kawayano Enterprise | Lock N' Go</title>
+<style>
+:root {
+  --green: #66752f;
+  --dark: #26351b;
+  --light: #edf0cf;
+  --cream: #f7f2df;
+  --brown: #9b7447;
+  --red: #9b3d3d;
+  --orange: #d97706;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #dfe3c7; color: var(--dark); }
+.app { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 18px; }
+
+/* Kiosk Screen Shell */
+.kiosk {
+  width: min(440px, 100%);
+  min-height: 780px;
+  background: linear-gradient(rgba(35,55,25,.45), rgba(40,60,25,.58)),
+              radial-gradient(circle at 20% 10%, #e6e9c7 0 4%, transparent 5%),
+              repeating-linear-gradient(45deg, #71814a 0 7px, #64723e 7px 14px);
+  border: 8px solid #9b8c64;
+  border-radius: 24px;
+  box-shadow: 0 18px 45px #26351b66;
+  overflow: hidden;
+  position: relative;
+}
+.screen { min-height: 764px; padding: 24px 20px; display: flex; flex-direction: column; position: relative; }
+.brand { font-family: Georgia, serif; text-align: center; color: #f4f0d9; font-size: 18px; letter-spacing: 2px; margin-bottom: 16px; text-shadow: 0 2px 3px #000; }
+.card { background: rgba(246,242,219,.95); border: 3px solid #9b8c64; border-radius: 20px; padding: 20px; box-shadow: 0 7px 14px #18240e55; }
+
+/* Typography & Inputs */
+h1, h2, h3 { text-align: center; margin: 8px 0 12px; color: #526129; }
+h1 { font-size: 28px; } h2 { font-size: 22px; }
+.sub { text-align: center; color: #556044; font-size: 13px; margin-bottom: 12px; }
+.btn {
+  width: 100%; border: 0; border-radius: 16px; padding: 14px 12px; margin: 6px 0;
+  background: linear-gradient(#f7f4df, #cfd1a4); color: #36411f; font-weight: 800; font-size: 15px;
+  box-shadow: 0 4px 0 #8d936c; cursor: pointer; transition: all 0.1s ease;
+}
+.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8d936c; }
+.btn.primary { background: linear-gradient(#8d9a4e, #64742d); color: #fff; box-shadow: 0 4px 0 #4a5720; }
+.btn.danger { background: #b85d55; color: white; box-shadow: 0 4px 0 #823a33; }
+.btn.warning { background: #e09f3e; color: white; box-shadow: 0 4px 0 #9e6b20; }
+.btn.small { font-size: 12px; padding: 8px; border-radius: 10px; }
+
+.field { margin: 10px 0; }
+.field label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 4px; color: #59633f; text-transform: uppercase; }
+.field input, .field select { width: 100%; padding: 12px; border: 2px solid #aeb58a; border-radius: 12px; background: #fffef6; font-size: 14px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; margin: 12px 0; }
+.back { color: #f7f2df; text-decoration: underline; cursor: pointer; text-align: center; margin-top: auto; padding-top: 12px; font-size: 13px; }
+
+/* Grid Components */
+.lockers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.locker {
+  padding: 12px 4px; border-radius: 13px; border: 2px solid #7e8b57; background: #dfe7bd;
+  font-weight: 800; cursor: pointer; text-align: center;
+}
+.locker small { display: block; font-size: 10px; margin-top: 4px; }
+.locker.occupied { background: #e8aaa3; border-color: #a75950; color: #6b2824; }
+.locker.expired-status { background: #fde68a; border-color: #d97706; color: #78350f; }
+
+.code { font-size: 32px; letter-spacing: 6px; text-align: center; font-weight: 900; background: #fff; border: 2px dashed #89945e; padding: 12px; border-radius: 12px; margin: 10px 0; }
+.payment { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pay { padding: 16px 8px; border: 2px solid #adb789; background: white; border-radius: 16px; text-align: center; font-weight: 800; cursor: pointer; }
+.pay.selected { outline: 4px solid #77883b; background: #eff2d6; }
+.notice { font-size: 12px; background: #f0eccf; border-left: 4px solid #7b873e; padding: 10px; margin: 10px 0; border-radius: 4px; }
+.success { font-size: 48px; text-align: center; margin: 8px 0; }
+.hidden { display: none !important; }
+
+/* Admin Panel Styles */
+.admin-container { width: min(1000px, 100%); background: #f6f2df; border-radius: 20px; padding: 24px; box-shadow: 0 18px 50px #0003; }
+.admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: #fffef6; border: 2px solid #c9cdb2; border-radius: 12px; padding: 12px; text-align: center; }
+.stat-card .num { font-size: 24px; font-weight: 900; color: #526129; }
+.stat-card .lbl { font-size: 11px; color: #666; text-transform: uppercase; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; background: white; border-radius: 12px; overflow: hidden; }
+.admin-table th, .admin-table td { padding: 10px; border-bottom: 1px solid #e0e4cd; text-align: left; }
+.admin-table th { background: #e2e7c5; color: #36411f; font-size: 12px; text-transform: uppercase; }
+.status-badge { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+.badge-available { background: #dcfce7; color: #166534; }
+.badge-occupied { background: #fee2e2; color: #991b1b; }
+.badge-expired { background: #fef3c7; color: #92400e; }
+
+@media(max-width:460px) {
+  .app { padding: 0; }
+  .kiosk, .admin-container { border-radius: 0; border-width: 0; min-height: 100vh; }
+  .screen { min-height: 100vh; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+const KEY = 'lockngo_system_v2';
+const ADMIN_PIN = '1234';
+
+const initial = {
+  lockers: Array.from({length: 12}, (_, i) => ({
+    id: String(101 + i % 3 + Math.floor(i / 3) * 100),
+    status: 'available', // 'available' | 'occupied'
+    rental: null
+  })),
+  logs: []
+};
+
+let state = JSON.parse(localStorage.getItem(KEY) || 'null') || initial;
+
+// Working state during workflow execution
+let current = {
+  locker: null,
+  user: null,
+  duration: null,
+  method: null,
+  code: null,
+  flowType: null // 'new' | 'reopen' | 'expired' | 'forgot' | 'return'
+};
+
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function resetCurrent() { current = { locker: null, user: null, duration: null, method: null, code: null, flowType: null }; }
+function app(x) { document.getElementById('app').innerHTML = x; }
+function shell(body, back = '') {
+  app(`<main class="kiosk"><section class="screen"><div class="brand">KAWAYANO ENTERPRISE</div>${body}${back ? `<div class="back" onclick="${back}">← Back</div>` : ''}</section></main>`);
+}
+
+function money(d) { return d === '3 Hours' ? '₱15' : d === '6 Hours' ? '₱25' : '₱40'; }
+function generateCode() { return String(Math.floor(100000 + Math.random() * 900000)); }
+function now() { return Date.now(); }
+function durationMs(d) { return d === '3 Hours' ? 3*3600000 : d === '6 Hours' ? 6*3600000 : 24*3600000; }
+function isExpired(rental) { return rental && now() > rental.expires; }
+
+/* ----------------------------------------------------
+   1. MAIN SCREEN / DASHBOARD FLOWS
+---------------------------------------------------- */
+function home() {
+  resetCurrent();
+  let freeCount = state.lockers.filter(l => l.status === 'available').length;
+  let occCount = state.lockers.length - freeCount;
+
+  shell(`
+    <div class="card" style="margin-top: 30px; text-align: center;">
+      <div style="font-size: 55px; margin-bottom: 5px;">🔐</div>
+      <h1>LOCK N' GO</h1>
+      <p class="sub">Lock it. Leave it. Trust it.</p>
+      
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 15px;">
+        <span style="font-size:12px; background:#dcfce7; color:#166534; padding:4px 8px; border-radius:12px; font-weight:bold;">🟢 Free: ${freeCount}</span>
+        <span style="font-size:12px; background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:12px; font-weight:bold;">🔴 Occupied: ${occCount}</span>
+      </div>
+
+      <button class="btn primary" onclick="chooseLocker()">NEW RENTAL</button>
+      <button class="btn" onclick="accessActiveMenu()">ACCESS / RETURN ACTIVE LOCKER</button>
+      <button class="btn small" style="margin-top:20px;" onclick="promptAdminLogin()">Admin Dashboard</button>
+    </div>
+  `);
+}
+
+/* ----------------------------------------------------
+   2. NEW RENTAL FLOW
+---------------------------------------------------- */
+function chooseLocker() {
+  const ls = state.lockers.map(l => {
+    const expired = isExpired(l.rental);
+    let statusClass = l.status === 'occupied' ? (expired ? 'expired-status' : 'occupied') : '';
+    let label = l.status === 'occupied' ? (expired ? 'EXPIRED' : 'OCCUPIED') : 'AVAILABLE';
+    return `<button class="locker ${statusClass}" ${l.status==='occupied'?'disabled':''} onclick="selectLockerForRent('${l.id}')">
+              ${l.id}<small>${label}</small>
+            </button>`;
+  }).join('');
+
+  shell(`
+    <div class="card">
+      <h2>Select Compartment</h2>
+      <p class="sub">Green = Available · Red = Occupied</p>
+      <div class="lockers">${ls}</div>
+      <div class="notice">Select an available locker to start a new rental.</div>
+    </div>
+  `, 'home()');
+}
+
+function selectLockerForRent(id) {
+  current.locker = id;
+  current.flowType = 'new';
+  terms();
+}
+
+function terms() {
+  shell(`
+    <div class="card">
+      <h2>TERMS & CONDITIONS</h2>
+      <ul style="font-size:12px; line-height:1.5; padding-left:18px;">
+        <li>Keep your secure access code safe & private.</li>
+        <li>Temporary storage purposes only.</li>
+        <li>Prohibited: Dangerous goods, flammables, illegal items.</li>
+        <li>No liability for lost or damaged belongings.</li>
+        <li>Overstaying will require additional payment.</li>
+      </ul>
+      <label class="check">
+        <input id="agree" type="checkbox"> I agree to all terms and conditions.
+      </label>
+      <button class="btn primary" onclick="acceptTerms()">AGREE & CONTINUE</button>
+    </div>
+  `, 'chooseLocker()');
+}
+
+function acceptTerms() {
+  if (!document.getElementById('agree').checked) return alert('Please agree to the terms first.');
+  userInfo();
+}
+
+function userInfo() {
+  shell(`
+    <div class="card">
+      <h2>User Details</h2>
+      <p class="sub">Step 1 of 2: Information Verification</p>
+      <div class="field">
+        <label>Full Name</label>
+        <input id="name" placeholder="e.g. Juan Dela Cruz">
+      </div>
+      <div class="field">
+        <label>Mobile Number</label>
+        <input id="mobile" inputmode="tel" placeholder="09XXXXXXXXX">
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input id="email" type="email" placeholder="juan@example.com">
+      </div>
+      <button class="btn primary" onclick="durationStep()">CONTINUE</button>
+    </div>
+  `, 'terms()');
+}
+
+function durationStep() {
+  let n = document.getElementById('name').value.trim();
+  let m = document.getElementById('mobile').value.trim();
+  let e = document.getElementById('email').value.trim();
+  if (!n || !m || !e) return alert('Please complete all fields.');
+
+  current.user = { name: n, mobile: m, email: e };
+
+  shell(`
+    <div class="card">
+      <h2>Rental Duration</h2>
+      <p class="sub">Step 2 of 2: Choose Time</p>
+      <div class="field">
+        <label>Duration Option</label>
+        <select id="dur">
+          <option>3 Hours</option>
+          <option>6 Hours</option>
+          <option>1 Day</option>
+        </select>
+      </div>
+      <div class="notice">Overstaying rental limit blocks access until extended.</div>
+      <button class="btn primary" onclick="paymentStep()">GO TO PAYMENT</button>
+    </div>
+  `, 'userInfo()');
+}
+
+function paymentStep() {
+  current.duration = document.getElementById('dur').value;
+  shell(`
+    <div class="card">
+      <h2>Payment</h2>
+      <p class="sub">Total Due: <b style="font-size:18px; color:#526129;">${money(current.duration)}</b></p>
+      <div class="payment">
+        <div class="pay" onclick="choosePay('GCash', this)">GCash</div>
+        <div class="pay" onclick="choosePay('Maya', this)">Maya</div>
+        <div class="pay" onclick="choosePay('MariBank', this)">MariBank</div>
+        <div class="pay" onclick="choosePay('Cash', this)">Cash Kiosk</div>
+      </div>
+      <div id="payNext" class="hidden" style="margin-top: 15px;">
+        <button class="btn primary" onclick="confirmPayment()">COMPLETE PAYMENT</button>
+      </div>
+    </div>
+  `, 'durationStep()');
+}
+
+function choosePay(m, el) {
+  current.method = m;
+  document.querySelectorAll('.pay').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('payNext').classList.remove('hidden');
+}
+
+function confirmPayment() {
+  current.code = generateCode();
+  const l = state.lockers.find(x => x.id === current.locker);
+  l.status = 'occupied';
+  l.rental = {
+    ...current.user,
+    duration: current.duration,
+    method: current.method,
+    code: current.code,
+    started: now(),
+    expires: now() + durationMs(current.duration)
+  };
+
+  state.logs.push({
+    time: new Date().toLocaleString(),
+    action: 'New Rental',
+    locker: l.id,
+    user: current.user.name,
+    amount: money(current.duration),
+    method: current.method
+  });
+
+  save();
+  displayGeneratedCode(false);
+}
+
+function displayGeneratedCode(isRecovery) {
+  shell(`
+    <div class="card" style="text-align:center">
+      <div class="success">🔑</div>
+      <h2>${isRecovery ? 'NEW ACCESS CODE:' : 'YOUR ACCESS CODE:'}</h2>
+      <div class="code">${current.code}</div>
+      <p class="sub">Sent to <b>${current.user?.mobile || 'your phone'}</b> and <b>${current.user?.email || 'email'}</b>.</p>
+      <div class="notice">Write down or screenshot this code to access your compartment later.</div>
+      <button class="btn primary" onclick="triggerDoorOpen()">OPEN COMPARTMENT</button>
+    </div>
+  `);
+}
+
+function triggerDoorOpen() {
+  shell(`
+    <div class="card" style="text-align:center">
+      <div class="success">🔓</div>
+      <h2>COMPARTMENT UNLOCKED</h2>
+      <p class="sub">Compartment <b>${current.locker}</b> is open.</p>
+      <div class="notice">Place or retrieve your items, then firmly close the compartment door.</div>
+      <button class="btn primary" onclick="home()">DONE / RETURN TO START</button>
+    </div>
+  `);
+}
+
+/* ----------------------------------------------------
+   3. ACCESS ACTIVE LOCKER / RETURN / EXPIRED / FORGOT FLOWS
+---------------------------------------------------- */
+function accessActiveMenu() {
+  shell(`
+    <div class="card">
+      <h2>Active Rental Access</h2>
+      <p class="sub">Select your rental compartment:</p>
+      <div class="field">
+        <label>Select Locker</label>
+        <select id="activeLockerSelect">
+          ${state.lockers.filter(l => l.status === 'occupied').map(l => `<option value="${l.id}">Compartment ${l.id} (${l.rental?.name || 'Occupied'})</option>`).join('') || '<option value="">No Active Rentals</option>'}
+        </select>
+      </div>
+      <div id="activeActions" class="${state.lockers.some(l => l.status === 'occupied') ? '' : 'hidden'}">
+        <button class="btn primary" onclick="startAccessFlow('reopen')">RE-OPEN COMPARTMENT</button>
+        <button class="btn warning" onclick="startAccessFlow('return')">RETURN ITEMS & END RENTAL</button>
+        <button class="btn small" style="margin-top:10px;" onclick="startAccessFlow('forgot')">Forgot Access Code?</button>
+      </div>
+    </div>
+  `, 'home()');
+}
+
+function startAccessFlow(type) {
+  const lockerId = document.getElementById('activeLockerSelect').value;
+  if (!lockerId) return alert('No compartment selected.');
+  
+  current.locker = lockerId;
+  current.flowType = type;
+
+  if (type === 'forgot') {
+    forgotCodeScreen();
+  } else {
+    enterCodeScreen();
+  }
+}
+
+function enterCodeScreen() {
+  const actionTitle = current.flowType === 'return' ? 'Return Items (End Lease)' : 'Access Active Rental';
+  shell(`
+    <div class="card">
+      <h2>${actionTitle}</h2>
+      <p class="sub">Compartment <b>${current.locker}</b></p>
+      <div class="field">
+        <label>Enter 6-Digit Rental Code</label>
+        <input id="enteredCode" maxlength="6" inputmode="numeric" placeholder="123456" style="font-size:20px; text-align:center; letter-spacing:4px;">
+      </div>
+      <button class="btn primary" onclick="verifyRentalCode()">VERIFY & PROCEED</button>
+      <button class="btn small" onclick="forgotCodeScreen()">Forgot Code?</button>
+    </div>
+  `, 'accessActiveMenu()');
+}
+
+function verifyRentalCode() {
+  const l = state.lockers.find(x => x.id === current.locker);
+  const input = document.getElementById('enteredCode').value.trim();
+
+  if (!l || !l.rental || l.rental.code !== input) {
+    return alert('Invalid Rental Code. Please try again or click "Forgot Code".');
+  }
+
+  // Check if code/rental has expired
+  if (isExpired(l.rental)) {
+    handleExpiredCode(l);
+    return;
+  }
+
+  // Valid Code Flow
+  if (current.flowType === 'return') {
+    executeReturn(l);
+  } else {
+    triggerDoorOpen();
+  }
+}
+
+function handleExpiredCode(locker) {
+  shell(`
+    <div class="card" style="text-align:center">
+      <div style="font-size:50px;">⚠️</div>
+      <h2 style="color:var(--orange)">RENTAL EXPIRED</h2>
+      <p class="sub">Your allocated rental duration for Compartment <b>${locker.id}</b> has elapsed.</p>
+      <div class="notice">An additional duration fee is required to unlock this compartment.</div>
+      <button class="btn primary" onclick="renewPaymentScreen()">PAY OVERTIME FEE</button>
+    </div>
+  `, 'accessActiveMenu()');
+}
+
+function renewPaymentScreen() {
+  const l = state.lockers.find(x => x.id === current.locker);
+  current.user = l.rental;
+  current.duration = l.rental.duration;
+
+  shell(`
+    <div class="card">
+      <h2>Rental Extension</h2>
+      <p class="sub">Compartment <b>${l.id}</b></p>
+      <p style="text-align:center;">Fee Due: <b>${money(l.rental.duration)}</b></p>
+      <div class="payment">
+        <div class="pay" onclick="choosePay('GCash', this)">GCash</div>
+        <div class="pay" onclick="choosePay('Maya', this)">Maya</div>
+        <div class="pay" onclick="choosePay('MariBank', this)">MariBank</div>
+        <div class="pay" onclick="choosePay('Cash', this)">Cash Kiosk</div>
+      </div>
+      <div id="payNext" class="hidden" style="margin-top:15px;">
+        <button class="btn primary" onclick="confirmRenewal()">PAY & RENEW CODE</button>
+      </div>
+    </div>
+  `, 'accessActiveMenu()');
+}
+
+function confirmRenewal() {
+  const l = state.lockers.find(x => x.id === current.locker);
+  current.code = generateCode();
+  
+  l.rental.code = current.code;
+  l.rental.started = now();
+  l.rental.expires = now() + durationMs(l.rental.duration);
+
+  state.logs.push({
+    time: new Date().toLocaleString(),
+    action: 'Overtime Payment / Renewal',
+    locker: l.id,
+    user: l.rental.name,
+    amount: money(l.rental.duration),
+    method: current.method
+  });
+
+  save();
+  displayGeneratedCode(true);
+}
+
+function forgotCodeScreen() {
+  shell(`
+    <div class="card">
+      <h2>Forgot Code?</h2>
+      <p class="sub">Enter registered details for Compartment <b>${current.locker}</b></p>
+      <div class="field">
+        <label>Registered Mobile Number</label>
+        <input id="forgotMobile" placeholder="09XXXXXXXXX">
+      </div>
+      <div class="field">
+        <label>Registered Email</label>
+        <input id="forgotEmail" type="email" placeholder="juan@example.com">
+      </div>
+      <button class="btn primary" onclick="verifyIdentityAndReset()">VERIFY IDENTITY</button>
+    </div>
+  `, 'accessActiveMenu()');
+}
+
+function verifyIdentityAndReset() {
+  const l = state.lockers.find(x => x.id === current.locker);
+  const m = document.getElementById('forgotMobile').value.trim();
+  const e = document.getElementById('forgotEmail').value.trim();
+
+  if (!l.rental || l.rental.mobile !== m || l.rental.email !== e) {
+    return alert('Verification failed. System record matching failed.');
+  }
+
+  current.code = generateCode();
+  current.user = l.rental;
+  l.rental.code = current.code;
+
+  state.logs.push({
+    time: new Date().toLocaleString(),
+    action: 'Code Recovery',
+    locker: l.id,
+    user: l.rental.name,
+    amount: '—',
+    method: '—'
+  });
+
+  save();
+  displayGeneratedCode(true);
+}
+
+function executeReturn(locker) {
+  state.logs.push({
+    time: new Date().toLocaleString(),
+    action: 'Rental Returned',
+    locker: locker.id,
+    user: locker.rental?.name || '—',
+    amount: '—',
+    method: '—'
+  });
+
+  locker.status = 'available';
+  locker.rental = null;
+  save();
+
+  shell(`
+    <div class="card" style="text-align:center">
+      <div class="success">🎉</div>
+      <h2>RETRIEVAL SUCCESSFUL</h2>
+      <p class="sub">Lease for Compartment <b>${current.locker}</b> is complete.</p>
+      <div class="notice">Please ensure all items are taken. Thank you for using Kawayano Enterprise!</div>
+      <button class="btn primary" onclick="home()">FINISH</button>
+    </div>
+  `);
+}
+
+/* ----------------------------------------------------
+   4. FULL ADMIN SYSTEM
+---------------------------------------------------- */
+function promptAdminLogin() {
+  const pin = prompt('Enter Admin Passkey (Default: 1234):');
+  if (pin === ADMIN_PIN) {
+    showAdminDashboard();
+  } else if (pin !== null) {
+    alert('Incorrect PIN!');
+  }
+}
+
+function showAdminDashboard() {
+  const total = state.lockers.length;
+  const avail = state.lockers.filter(l => l.status === 'available').length;
+  const occupied = state.lockers.filter(l => l.status === 'occupied' && !isExpired(l.rental)).length;
+  const expired = state.lockers.filter(l => l.status === 'occupied' && isExpired(l.rental)).length;
+
+  let lockerRows = state.lockers.map(l => {
+    let exp = isExpired(l.rental);
+    let statusBadge = l.status === 'available' 
+      ? `<span class="status-badge badge-available">FREE</span>`
+      : exp 
+        ? `<span class="status-badge badge-expired">EXPIRED</span>` 
+        : `<span class="status-badge badge-occupied">OCCUPIED</span>`;
+
+    return `
+      <tr>
+        <td><b>${l.id}</b></td>
+        <td>${statusBadge}</td>
+        <td>${l.rental ? l.rental.name : '<span style="color:#aaa;">—</span>'}</td>
+        <td>${l.rental ? l.rental.code : '<span style="color:#aaa;">—</span>'}</td>
+        <td>${l.rental ? new Date(l.rental.expires).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '<span style="color:#aaa;">—</span>'}</td>
+        <td>
+          <button class="btn small" style="width:auto; margin:2px;" onclick="adminOpenDoor('${l.id}')">Door Release</button>
+          ${l.rental ? `<button class="btn small warning" style="width:auto; margin:2px;" onclick="adminExtend('${l.id}')">+1 Hr</button>` : ''}
+          ${l.rental ? `<button class="btn small danger" style="width:auto; margin:2px;" onclick="adminForceReturn('${l.id}')">Force Clear</button>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  let logRows = state.logs.slice().reverse().map(x => `
+    <tr>
+      <td>${x.time}</td>
+      <td><b>${x.action}</b></td>
+      <td>Locker ${x.locker}</td>
+      <td>${x.user}</td>
+      <td>${x.amount} (${x.method})</td>
+    </tr>
+  `).join('');
+
+  app(`
+    <main class="admin-container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2>KAWAYANO LOCK N' GO — SYSTEM MONITOR</h2>
+        <div>
+          <button class="btn small primary" style="width:auto;" onclick="home()">Exit to Kiosk</button>
+          <button class="btn small danger" style="width:auto;" onclick="resetDemoData()">Reset System</button>
+        </div>
+      </div>
+
+      <div class="admin-stats">
+        <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total Lockers</div></div>
+        <div class="stat-card"><div class="num" style="color:#166534;">${avail}</div><div class="lbl">Available</div></div>
+        <div class="stat-card"><div class="num" style="color:#991b1b;">${occupied}</div><div class="lbl">Active Rentals</div></div>
+        <div class="stat-card"><div class="num" style="color:#92400e;">${expired}</div><div class="lbl">Expired</div></div>
+      </div>
+
+      <h3>Compartment Management</h3>
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Compartment</th>
+              <th>Status</th>
+              <th>Current User</th>
+              <th>Code</th>
+              <th>Expiry</th>
+              <th>Admin Override</th>
+            </tr>
+          </thead>
+          <tbody>${lockerRows}</tbody>
+        </table>
+      </div>
+
+      <h3>System Audit Logs</h3>
+      <div style="overflow-x:auto; max-height:250px; overflow-y:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Event Action</th>
+              <th>Locker</th>
+              <th>User</th>
+              <th>Payment</th>
+            </tr>
+          </thead>
+          <tbody>${logRows || '<tr><td colspan="5" style="text-align:center;">No activity recorded yet.</td></tr>'}</tbody>
+        </table>
+      </div>
+    </main>
+  `);
+}
+
+function adminOpenDoor(id) {
+  alert(`[SIMULATION] Hardware Command Sent: Solenoid Relay Opened for Compartment ${id}.`);
+}
+
+function adminExtend(id) {
+  let l = state.lockers.find(x => x.id === id);
+  if (!l.rental) return;
+  l.rental.expires += 3600000; // Add 1 Hour
+  state.logs.push({
+    time: new Date().toLocaleString(),
+    action: 'Admin Extended (+1h)',
+    locker: id,
+    user: l.rental.name,
+    amount: 'Free',
+    method: 'Admin'
+  });
+  save();
+  showAdminDashboard();
+}
+
+function adminForceReturn(id) {
+  if (!confirm(`Are you sure you want to forcibly clear Compartment ${id}?`)) return;
+  let l = state.lockers.find(x => x.id === id);
+  state.logs.push({
+    time: new Date().toLocaleString(),
+    action: 'Admin Forced Clear',
+    locker: id,
+    user: l.rental?.name || '—',
+    amount: '—',
+    method: 'Admin'
+  });
+  l.status = 'available';
+  l.rental = null;
+  save();
+  showAdminDashboard();
+}
+
+function resetDemoData() {
+  if (confirm('Reset all lockers and logs back to default state?')) {
+    state = JSON.parse(JSON.stringify(initial));
+    save();
+    showAdminDashboard();
+  }
+}
+
+// Initial Boot
+home();
+</script>
+</body>
+</html>
